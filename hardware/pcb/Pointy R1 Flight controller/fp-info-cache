@@ -1,4 +1,4 @@
-27110473620098614
+27117585190546624
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -107359,6 +107359,13 @@ MODULE_GY-521
 8
 8
 footprints
+MPL3115A2
+
+
+0
+7
+7
+footprints
 SOT95P240X111-3N
 <b>SOT-23</b>
 
@@ -107366,12 +107373,33 @@ SOT95P240X111-3N
 3
 3
 footprints
+SW_SLW-1276864-4A-D
+
+
+0
+3
+3
+footprints
+SW_TS02-66-70-BK-100-LCR-D
+
+
+0
+4
+4
+footprints
 TEENSY41
 <b>TEENSY 4.1-5</b><br>
 
 0
 59
 59
+footprints
+TE_282837-2
+
+
+0
+2
+2
 footprints
 TO255P1040X460X1968-3
 
