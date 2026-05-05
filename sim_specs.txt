@@ -1,0 +1,15 @@
+Fundamental Simulation variables:
+- Velocity
+- Vertical Velocity
+- Horizontal Velocity
+- Vertical displacement
+- Horizontal displacement
+- Gravitational constant (9.802m/s^2)
+- Time elapsed/Time taken
+- Acceleration
+- Mass
+- Initial Thrust Force
+- Normal Thrust Force
+- Motor Burn Time
+
+This is excluding the control system and strictly considers a point mass being propelled up. It does not really take much into consideration but is fundamental
