@@ -5437,6 +5437,16 @@
 	)
 	(wire
 		(pts
+			(xy 151.13 38.1) (xy 162.56 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e1329fbd-0344-40a3-854b-9015bb47b915")
+	)
+	(wire
+		(pts
 			(xy 113.03 39.37) (xy 106.68 39.37)
 		)
 		(stroke
@@ -5970,6 +5980,28 @@
 		(uuid "7b00c38b-f070-48fb-893a-ce51897f893b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 83.6772 173.99 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "VOL"
+		(shape input)
+		(at 151.13 38.1 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "8ca73cb9-3c40-4c84-b91c-5275ed0e79ac")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 144.6976 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8201,76 +8233,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 160.02 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "766b05a7-770e-48bb-9be3-5766ed48c34b")
-		(property "Reference" "C4"
-			(at 163.83 142.2399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "C"
-			(at 163.83 144.7799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 160.9852 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 160.02 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 160.02 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ecc7c1e9-bcc7-434d-a801-f72bd6506a7b")
-		)
-		(pin "2"
-			(uuid "8ce6215e-399b-4382-912e-46d824a2605c")
-		)
-		(instances
-			(project "Pointy R1 Flight controller"
-				(path "/461b38ed-136a-4336-8029-84a41326c46a"
-					(reference "C4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 142.24 129.54 0)
 		(unit 1)
@@ -8535,76 +8497,6 @@
 			(project ""
 				(path "/461b38ed-136a-4336-8029-84a41326c46a"
 					(reference "C1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 149.86 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8425376f-d2c5-4b78-b62d-ae467acf7e2c")
-		(property "Reference" "C3"
-			(at 153.67 142.2399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "C"
-			(at 153.67 144.7799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 150.8252 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 149.86 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 149.86 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "230cb877-1d22-4dd0-aa65-a7f8e51507c6")
-		)
-		(pin "2"
-			(uuid "b1f71fd8-2049-494b-977e-5b7905909e92")
-		)
-		(instances
-			(project "Pointy R1 Flight controller"
-				(path "/461b38ed-136a-4336-8029-84a41326c46a"
-					(reference "C3")
 					(unit 1)
 				)
 			)
