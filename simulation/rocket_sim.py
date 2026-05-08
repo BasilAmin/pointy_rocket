@@ -130,9 +130,11 @@ def get_derivatives(t, state, est_error_vec, est_rate_vec, est_int_vec):
     thrust_mag, mass, cg, I_tensor = get_physics_properties(t)
     
     # 1. Control Logic (2-Axis TVC)
-    # target_gimbal provides restoring torque
-    target_gp = - (Kp_gain * est_error_vec[0] + Kd_gain * est_rate_vec[0] + Ki_gain * est_int_vec[0])
-    target_gy = - (Kp_gain * est_error_vec[2] + Kd_gain * est_rate_vec[2] + Ki_gain * est_int_vec[2])
+    # v_up_body contains the World-UP vector in the Body Frame [X, Y, Z]
+    # Pitch Gimbal (gp) -> Torques around X axis (fixes Z error)
+    target_gp = - (Kp_gain * est_error_vec[2] + Kd_gain * est_rate_vec[0] + Ki_gain * est_int_vec[2])
+    # Yaw Gimbal (gy) -> Torques around Z axis (fixes X error)
+    target_gy = (Kp_gain * est_error_vec[0] + Kd_gain * est_rate_vec[2] + Ki_gain * est_int_vec[0])
     
     target_gp = np.clip(target_gp, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
     target_gy = np.clip(target_gy, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
@@ -142,12 +144,9 @@ def get_derivatives(t, state, est_error_vec, est_rate_vec, est_int_vec):
     
     # 2. Forces (Body Frame)
     # Body-Y is longitudinal.
-    # Gimbal Pitch (gp) rotates thrust around X-axis.
-    # Gimbal Yaw (gy) rotates thrust around Z-axis.
-    # Force vector in body frame:
-    f_thrust_body = np.array([thrust_mag * math.sin(gimbal[0]), 
+    f_thrust_body = np.array([-thrust_mag * math.sin(gimbal[1]), 
                               thrust_mag * math.cos(gimbal[0]) * math.cos(gimbal[1]),
-                              thrust_mag * math.sin(gimbal[1])])
+                              -thrust_mag * math.sin(gimbal[0])])
     
     # Wind and Relative Velocity
     wind_world = surface_wind + np.array([0, wind_shear_gradient * pos[1], 0])
