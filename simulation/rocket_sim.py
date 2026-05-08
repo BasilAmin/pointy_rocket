@@ -57,6 +57,7 @@ SERVO_TAU = 0.05
 
 Kp_gain = 5.0
 Kd_gain = 1.2
+Ki_gain = 0.5
 
 # 3. Kalman Filter Class
 class KalmanFilter1D:
@@ -104,7 +105,14 @@ def get_physics_properties(t):
     
     return thrust, mass, cg_from_base, inertia
 
-def get_derivatives(t, state, est_pitch, est_pitch_rate):
+# Environmental Parameters
+surface_wind_x = 2.0  # m/s
+wind_shear_gradient = 0.05  # m/s per meter of altitude
+
+def get_wind(y):
+    return surface_wind_x + wind_shear_gradient * max(0.0, y)
+
+def get_derivatives(t, state, est_pitch, est_pitch_rate, est_pitch_int):
     x, y, vx, vy, pitch, pitch_rate, gimbal = state
     
     thrust, mass, cg_from_base, inertia = get_physics_properties(t)
@@ -112,7 +120,7 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
     moment_arm_tvc = cg_from_base
     moment_arm_drag = cp_from_base - cg_from_base
         
-    target_gimbal = -((Kp_gain * est_pitch) + (Kd_gain * est_pitch_rate))
+    target_gimbal = -((Kp_gain * est_pitch) + (Kd_gain * est_pitch_rate) + (Ki_gain * est_pitch_int))
     target_gimbal = np.clip(target_gimbal, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
     
     dgimbal_dt = (target_gimbal - gimbal) / SERVO_TAU
@@ -127,14 +135,19 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
         area = area_base
         Cd = Cd_base
 
-    velocity_mag = math.sqrt(vx**2 + vy**2)
+    # Wind and Relative Velocity
+    v_wind_x = get_wind(y)
+    v_rel_x = vx - v_wind_x
+    v_rel_y = vy  # Assuming negligible vertical wind
+
+    velocity_mag = math.sqrt(v_rel_x**2 + v_rel_y**2)
     drag_force = 0.5 * rho * Cd * area * (velocity_mag**2)
     
     if velocity_mag > 1e-6:
-        drag_x = drag_force * (vx / velocity_mag)
-        drag_y = drag_force * (vy / velocity_mag)
+        drag_x = drag_force * (v_rel_x / velocity_mag)
+        drag_y = drag_force * (v_rel_y / velocity_mag)
         
-        v_angle = math.atan2(vy, vx)
+        v_angle = math.atan2(v_rel_y, v_rel_x)
         aoa = body_angle - v_angle
         drag_radial = drag_force * math.sin(aoa)
     else:
@@ -162,11 +175,11 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
     
     return np.array([vx, vy, ax, ay, pitch_rate, angular_accel, dgimbal_dt])
 
-def rk4_step(t, state, dt, est_pitch, est_pitch_rate):
-    k1 = get_derivatives(t, state, est_pitch, est_pitch_rate)
-    k2 = get_derivatives(t + dt/2, state + (dt/2) * k1, est_pitch, est_pitch_rate)
-    k3 = get_derivatives(t + dt/2, state + (dt/2) * k2, est_pitch, est_pitch_rate)
-    k4 = get_derivatives(t + dt, state + dt * k3, est_pitch, est_pitch_rate)
+def rk4_step(t, state, dt, est_pitch, est_pitch_rate, est_pitch_int):
+    k1 = get_derivatives(t, state, est_pitch, est_pitch_rate, est_pitch_int)
+    k2 = get_derivatives(t + dt/2, state + (dt/2) * k1, est_pitch, est_pitch_rate, est_pitch_int)
+    k3 = get_derivatives(t + dt/2, state + (dt/2) * k2, est_pitch, est_pitch_rate, est_pitch_int)
+    k4 = get_derivatives(t + dt, state + dt * k3, est_pitch, est_pitch_rate, est_pitch_int)
     return state + (dt/6) * (k1 + 2*k2 + 2*k3 + k4)
 
 times = []
@@ -187,12 +200,13 @@ time_elapsed = 0.0
 kf = KalmanFilter1D(initial_state=[0.0, 0.0])
 est_pitch = 0.0
 est_pitch_rate = 0.0
+est_pitch_int = 0.0
 
-print("Starting RK4 Rigid Body Dynamics + IMU + Dynamic Mass Simulation...")
+print("Starting RK4 Rigid Body Dynamics + IMU + Dynamic Mass + Wind Simulation...")
 
 while time_elapsed == 0 or X[1] >= 0:
     thrust, mass, cg_from_base, inertia = get_physics_properties(time_elapsed)
-    derivs = get_derivatives(time_elapsed, X, est_pitch, est_pitch_rate)
+    derivs = get_derivatives(time_elapsed, X, est_pitch, est_pitch_rate, est_pitch_int)
     
     ax_true = derivs[2]
     ay_true = derivs[3]
@@ -252,7 +266,12 @@ while time_elapsed == 0 or X[1] >= 0:
     est_pitch_vals.append(math.degrees(est_pitch))
     est_pitch_rate_vals.append(math.degrees(est_pitch_rate))
     
-    X = rk4_step(time_elapsed, X, dt, est_pitch, est_pitch_rate)
+    # Integral update
+    est_pitch_int += est_pitch * dt
+    # Anti-windup
+    est_pitch_int = np.clip(est_pitch_int, -math.radians(20), math.radians(20))
+    
+    X = rk4_step(time_elapsed, X, dt, est_pitch, est_pitch_rate, est_pitch_int)
     time_elapsed += dt
     
     if time_elapsed > 1000:
