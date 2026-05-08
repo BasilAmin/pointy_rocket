@@ -6,14 +6,35 @@ import numpy as np
 import math
 
 # 1. Physical Parameters
-mass = 1.23  # kg
+initial_total_mass = 1.23  # kg
 gravity = 9.802  # m/s^2
 
+# Dynamic Mass Parameters
+initial_propellant_mass = 0.098  # kg (approx 24.5g per D12 motor x 4)
+dry_mass = initial_total_mass - initial_propellant_mass
+
+# Center of Gravity Parameters
+cg_prop_from_base = 0.05  # m
+# We must find the dry CG such that the initial total CG is 0.35m
+# Total_CG = (Dry_Mass * CG_dry + Prop_Mass * CG_prop) / Total_Mass
+# 0.35 = (1.132 * CG_dry + 0.098 * 0.05) / 1.23
+# 0.4305 = 1.132 * CG_dry + 0.0049
+# CG_dry = 0.4256 / 1.132 = 0.37597
+cg_dry_from_base = 0.37597  # m
+
 # Thrust Profile (4x Estes D12 cluster)
-initial_thrust = 132.0  
-initial_thrust_duration = 0.2  
-normal_thrust = 46.0  
-burn_time = 1.6  
+# Using realistic D12 thrust curve points multiplied by 4
+thrust_curve_time = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.4, 0.8, 1.2, 1.5, 1.6, 1.7])
+thrust_curve_force = np.array([100.0, 132.0, 132.0, 90.0, 48.0, 44.0, 42.0, 40.0, 35.0, 0.0, 0.0])
+burn_time = 1.6  # s
+
+# Calculate Cumulative Impulse for Mass flow rate
+cum_impulse = np.zeros_like(thrust_curve_force)
+for i in range(1, len(thrust_curve_time)):
+    dt = thrust_curve_time[i] - thrust_curve_time[i-1]
+    avg_f = 0.5 * (thrust_curve_force[i] + thrust_curve_force[i-1])
+    cum_impulse[i] = cum_impulse[i-1] + avg_f * dt
+total_impulse = cum_impulse[-1]
 
 # Aerodynamic & Physical parameters
 area_base = 0.00785  
@@ -26,14 +47,8 @@ diameter = 0.1
 parachute_area = 0.28  # m^2
 parachute_cd = 1.5
 
-# Moment Arms 
-cg_from_base = 0.35  
-cp_from_base = 0.60  
-moment_arm_tvc = cg_from_base  
-moment_arm_drag = cp_from_base - cg_from_base  
-
-# Moment of Inertia 
-inertia = (1/12) * mass * (height**2) + (1/4) * mass * ((diameter/2)**2)
+# Fixed Aerodynamic Center of Pressure
+cp_from_base = 0.60  # m
 
 # 2. Control Parameters
 MAX_GIMBAL_ANGLE_DEG = 8.0
@@ -72,12 +87,30 @@ launch_angle_rad = math.radians(launch_angle_deg)
 
 X = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
+def get_physics_properties(t):
+    """Calculates instantaneous mass, cg, inertia, and thrust."""
+    if t >= thrust_curve_time[-1]:
+        thrust = 0.0
+        current_impulse = total_impulse
+    else:
+        thrust = np.interp(t, thrust_curve_time, thrust_curve_force)
+        current_impulse = np.interp(t, thrust_curve_time, cum_impulse)
+        
+    prop_mass = initial_propellant_mass * max(0.0, 1.0 - (current_impulse / total_impulse))
+    mass = dry_mass + prop_mass
+    
+    cg_from_base = ((dry_mass * cg_dry_from_base) + (prop_mass * cg_prop_from_base)) / mass
+    inertia = (1/12) * mass * (height**2) + (1/4) * mass * ((diameter/2)**2)
+    
+    return thrust, mass, cg_from_base, inertia
+
 def get_derivatives(t, state, est_pitch, est_pitch_rate):
     x, y, vx, vy, pitch, pitch_rate, gimbal = state
     
-    if t < initial_thrust_duration: thrust = initial_thrust
-    elif t < burn_time: thrust = normal_thrust
-    else: thrust = 0.0
+    thrust, mass, cg_from_base, inertia = get_physics_properties(t)
+    
+    moment_arm_tvc = cg_from_base
+    moment_arm_drag = cp_from_base - cg_from_base
         
     target_gimbal = -((Kp_gain * est_pitch) + (Kd_gain * est_pitch_rate))
     target_gimbal = np.clip(target_gimbal, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
@@ -86,7 +119,7 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
     
     body_angle = launch_angle_rad + pitch
     
-    # Parachute deployment logic inside derivative
+    # Parachute deployment logic
     if vy < 0 and t > burn_time:
         area = parachute_area
         Cd = parachute_cd
@@ -101,7 +134,6 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
         drag_x = drag_force * (vx / velocity_mag)
         drag_y = drag_force * (vy / velocity_mag)
         
-        # Calculate Angle of Attack (AoA) for radial drag
         v_angle = math.atan2(vy, vx)
         aoa = body_angle - v_angle
         drag_radial = drag_force * math.sin(aoa)
@@ -148,16 +180,20 @@ pitch_vals, gimbal_vals = [], []
 est_pitch_vals, est_pitch_rate_vals = [], []
 meas_pitch_vals, meas_pitch_rate_vals = [], []
 true_pitch_rate_vals = []
+mass_vals = []
+thrust_vals = []
 
 time_elapsed = 0.0
 kf = KalmanFilter1D(initial_state=[0.0, 0.0])
 est_pitch = 0.0
 est_pitch_rate = 0.0
 
-print("Starting RK4 Rigid Body Dynamics + IMU Simulation...")
+print("Starting RK4 Rigid Body Dynamics + IMU + Dynamic Mass Simulation...")
 
 while time_elapsed == 0 or X[1] >= 0:
+    thrust, mass, cg_from_base, inertia = get_physics_properties(time_elapsed)
     derivs = get_derivatives(time_elapsed, X, est_pitch, est_pitch_rate)
+    
     ax_true = derivs[2]
     ay_true = derivs[3]
     pitch_true = X[4]
@@ -175,6 +211,8 @@ while time_elapsed == 0 or X[1] >= 0:
     pitch_vals.append(math.degrees(pitch_true))
     gimbal_vals.append(math.degrees(X[6]))
     true_pitch_rate_vals.append(math.degrees(pitch_rate_true))
+    mass_vals.append(mass)
+    thrust_vals.append(thrust)
 
     A_global_x = ax_true
     A_global_y = ay_true + gravity
@@ -225,25 +263,26 @@ print(f"Simulation complete.")
 print(f"Apogee (Max Height): {max(y_vals):.2f} m")
 print(f"Total Time of Flight: {time_elapsed:.2f} s")
 print(f"Max Horizontal Distance: {max(x_vals):.2f} m")
+print(f"Final Dry Mass: {mass_vals[-1]:.3f} kg")
 
 # Static Plots
 fig_static = plt.figure(figsize=(15, 10))
 
-plt.subplot(2, 3, 1)
+plt.subplot(2, 4, 1)
 plt.plot(x_vals, y_vals, 'b-', label='Trajectory')
 plt.title('Rocket Trajectory')
 plt.xlabel('Horizontal Displacement (m)')
 plt.ylabel('Vertical Displacement (m)')
 plt.grid(True)
 
-plt.subplot(2, 3, 2)
+plt.subplot(2, 4, 2)
 plt.plot(times, y_vals, 'g-')
 plt.title('Altitude vs Time')
 plt.xlabel('Time (s)')
 plt.ylabel('Vertical Displacement (m)')
 plt.grid(True)
 
-plt.subplot(2, 3, 3)
+plt.subplot(2, 4, 3)
 plt.plot(times, vy_vals, 'r-', label='Vertical Velocity')
 plt.plot(times, vx_vals, 'c-', label='Horizontal Velocity')
 plt.plot(times, vmag_vals, 'k:', label='Total Velocity')
@@ -253,18 +292,14 @@ plt.ylabel('Velocity (m/s)')
 plt.grid(True)
 plt.legend()
 
-plt.subplot(2, 3, 4)
-plt.plot(times, ay_vals, 'm-', label='Vertical Acceleration')
-plt.plot(times, ax_vals, 'c-', label='Horizontal Acceleration')
-plt.plot(times, amag_vals, 'k:', label='Total Acceleration')
-plt.axvline(x=burn_time, color='k', linestyle='--', label='Motor Burnout')
-plt.title('Acceleration vs Time')
+plt.subplot(2, 4, 4)
+plt.plot(times, mass_vals, 'm-', linewidth=2)
+plt.title('Mass vs Time')
 plt.xlabel('Time (s)')
-plt.ylabel('Acceleration (m/s²)')
+plt.ylabel('Mass (kg)')
 plt.grid(True)
-plt.legend()
 
-plt.subplot(2, 3, 5)
+plt.subplot(2, 4, 5)
 plt.plot(times, pitch_vals, 'k-', linewidth=2, label='True Pitch')
 plt.plot(times, meas_pitch_vals, 'r.', alpha=0.2, markersize=2, label='Noisy Accel Pitch')
 plt.plot(times, est_pitch_vals, 'g-', linewidth=1.5, label='Filtered Pitch')
@@ -276,7 +311,7 @@ plt.ylabel('Pitch Angle (degrees)')
 plt.grid(True)
 plt.legend(loc='upper right', fontsize='small')
 
-plt.subplot(2, 3, 6)
+plt.subplot(2, 4, 6)
 plt.plot(times, true_pitch_rate_vals, 'k-', linewidth=2, label='True Rate')
 plt.plot(times, meas_pitch_rate_vals, 'r.', alpha=0.2, markersize=2, label='Noisy Gyro Rate')
 plt.plot(times, est_pitch_rate_vals, 'g-', linewidth=1.5, label='Filtered Rate')
@@ -285,6 +320,24 @@ plt.xlabel('Time (s)')
 plt.ylabel('Pitch Rate (deg/s)')
 plt.grid(True)
 plt.legend(loc='upper right', fontsize='small')
+
+plt.subplot(2, 4, 7)
+plt.plot(times, thrust_vals, 'orange', linewidth=2)
+plt.title('Thrust vs Time')
+plt.xlabel('Time (s)')
+plt.ylabel('Thrust (N)')
+plt.grid(True)
+
+plt.subplot(2, 4, 8)
+plt.plot(times, ay_vals, 'm-', label='Vertical Accel')
+plt.plot(times, ax_vals, 'c-', label='Horizontal Accel')
+plt.plot(times, amag_vals, 'k:', label='Total Accel')
+plt.axvline(x=burn_time, color='k', linestyle='--', label='Motor Burnout')
+plt.title('Acceleration vs Time')
+plt.xlabel('Time (s)')
+plt.ylabel('Acceleration (m/s²)')
+plt.grid(True)
+plt.legend()
 
 plt.tight_layout()
 fig_static.savefig('D:/pointy_rocket/simulation/simulation_results.png')
@@ -296,7 +349,6 @@ rocket_body = patches.Rectangle((-diameter/2, 0), diameter, height, fc='blue')
 thrust_vector, = ax.plot([], [], '-', color='red', linewidth=2)
 trajectory_path, = ax.plot([], [], 'g-', alpha=0.5)
 
-# Parachute patches
 canopy = patches.Arc((0, 0), 2.0, 1.5, theta1=0.0, theta2=180.0, color='orange', linewidth=2)
 chute_line, = ax.plot([], [], 'k-', linewidth=1)
 
@@ -316,21 +368,20 @@ def update(frame):
     vx, vy = vx_vals[frame], vy_vals[frame]
     pitch, gimbal = pitch_vals[frame], gimbal_vals[frame]
     
-    if t < initial_thrust_duration: thrust_mag = initial_thrust
-    elif t < burn_time: thrust_mag = normal_thrust
-    else: thrust_mag = 0.0
+    # Recalculate CG for drawing
+    thrust_mag, mass_val, current_cg, _ = get_physics_properties(t)
 
     body_angle_deg = launch_angle_deg + pitch
     rot_angle_deg = body_angle_deg - 90.0
 
     tr = transforms.Affine2D().rotate_deg_around(0, 0, rot_angle_deg) + transforms.Affine2D().translate(cx, cy) + ax.transData
-    rocket_body.set_xy((-diameter/2, -cg_from_base))
+    rocket_body.set_xy((-diameter/2, -current_cg))
     rocket_body.set_transform(tr)
 
     trajectory_path.set_data(x_vals[:frame+1], y_vals[:frame+1])
 
-    base_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg))
-    base_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg))
+    base_x = cx - current_cg * math.cos(math.radians(body_angle_deg))
+    base_y = cy - current_cg * math.sin(math.radians(body_angle_deg))
     
     if thrust_mag > 0:
         thrust_len = thrust_mag / 50.0
@@ -353,8 +404,8 @@ def update(frame):
     if vy < 0 and t > burn_time:
         if canopy not in ax.patches:
             ax.add_patch(canopy)
-        top_x = cx + (height - cg_from_base) * math.cos(math.radians(body_angle_deg))
-        top_y = cy + (height - cg_from_base) * math.sin(math.radians(body_angle_deg))
+        top_x = cx + (height - current_cg) * math.cos(math.radians(body_angle_deg))
+        top_y = cy + (height - current_cg) * math.sin(math.radians(body_angle_deg))
         canopy_x = top_x
         canopy_y = top_y + 3.0
         canopy.center = (canopy_x, canopy_y)
@@ -364,7 +415,7 @@ def update(frame):
             canopy.remove()
         chute_line.set_data([], [])
 
-    telemetry_text.set_text(f"Time: {t:.2f} s\nAlt: {cy:.2f} m\nVel: {math.sqrt(vx**2+vy**2):.2f} m/s\nPitch: {pitch:.2f}°\nGimbal: {gimbal:.2f}°\nChute: {chute_status}")
+    telemetry_text.set_text(f"Time: {t:.2f} s\nAlt: {cy:.2f} m\nVel: {math.sqrt(vx**2+vy**2):.2f} m/s\nPitch: {pitch:.2f}°\nGimbal: {gimbal:.2f}°\nChute: {chute_status}\nMass: {mass_val:.3f} kg")
     
     window_height, window_width = 40, 20
     ax.set_xlim(cx - window_width/2, cx + window_width/2)
