@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.patches as patches
+import matplotlib.transforms as transforms
 import numpy as np
 import math
 
@@ -63,6 +66,7 @@ v_y_vals = []
 v_x_vals = []
 accel_y_vals = []
 pitch_vals = []  # Array for pitch data
+gimbal_vals = [] # Array for gimbal data
 
 print("Starting 2D Rigid Body Dynamics simulation...")
 
@@ -146,6 +150,7 @@ while time_elapsed == 0 or y >= 0:
     v_y_vals.append(v_y)
     accel_y_vals.append(a_y)
     pitch_vals.append(math.degrees(pitch_angle))
+    gimbal_vals.append(math.degrees(gimbal_angle))
 
     # Increment time
     time_elapsed += dt
@@ -160,56 +165,90 @@ print(f"Apogee (Max Height): {max(y_vals):.2f} m")
 print(f"Total Time of Flight: {time_elapsed:.2f} s")
 print(f"Max Horizontal Distance: {max(x_vals):.2f} m")
 
-# 5. Update Visualization
-plt.figure(figsize=(15, 10))
+# 5. Update Visualization (Animation)
+fig, ax = plt.subplots(figsize=(6, 10))
 
-# 1. Trajectory (X vs Y)
-plt.subplot(2, 3, 1)
-plt.plot(x_vals, y_vals, 'b-', label='Trajectory')
-plt.title('Rocket Trajectory')
-plt.xlabel('Horizontal Displacement (m)')
-plt.ylabel('Vertical Displacement (m)')
-plt.grid(True)
-plt.legend()
+# Define Artists
+rocket_body = patches.Rectangle((-diameter/2, 0), diameter, height, fc='blue')
+thrust_vector, = ax.plot([], [], '-', color='red', linewidth=2)
+trajectory_path, = ax.plot([], [], 'g-', alpha=0.5)
+telemetry_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, verticalalignment='top',
+                         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+ground_line, = ax.plot([-100, 100], [0, 0], 'k-', linewidth=2)
 
-# 2. Vertical Altitude vs Time
-plt.subplot(2, 3, 2)
-plt.plot(times, y_vals, 'g-')
-plt.title('Altitude vs Time')
-plt.xlabel('Time (s)')
-plt.ylabel('Vertical Displacement (m)')
-plt.grid(True)
+def init():
+    ax.add_patch(rocket_body)
+    ax.set_xlim(-10, 10)
+    ax.set_ylim(-5, 100)
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
 
-# 3. Velocities vs Time
-plt.subplot(2, 3, 3)
-plt.plot(times, v_y_vals, 'r-', label='Vertical Velocity')
-plt.plot(times, v_x_vals, 'c-', label='Horizontal Velocity')
-plt.title('Velocity vs Time')
-plt.xlabel('Time (s)')
-plt.ylabel('Velocity (m/s)')
-plt.grid(True)
-plt.legend()
+def update(frame):
+    t = times[frame]
+    cx = x_vals[frame]
+    cy = y_vals[frame]
+    vx = v_x_vals[frame]
+    vy = v_y_vals[frame]
+    pitch = pitch_vals[frame]  # degrees
+    gimbal = gimbal_vals[frame]  # degrees
+    
+    # Calculate Thrust status
+    if t < initial_thrust_duration:
+        thrust_mag = initial_thrust
+    elif t < burn_time:
+        thrust_mag = normal_thrust
+    else:
+        thrust_mag = 0.0
 
-# 4. Vertical Acceleration vs Time
-plt.subplot(2, 3, 4)
-plt.plot(times, accel_y_vals, 'm-', label='Vertical Acceleration')
-plt.axvline(x=burn_time, color='k', linestyle='--', label='Motor Burnout')
-plt.title('Vertical Acceleration vs Time')
-plt.xlabel('Time (s)')
-plt.ylabel('Acceleration (m/s²)')
-plt.grid(True)
-plt.legend()
+    body_angle_deg = launch_angle_deg + pitch
+    rot_angle_deg = body_angle_deg - 90.0
 
-# 5. Rocket Pitch Angle vs Time
-plt.subplot(2, 3, 5)
-plt.plot(times, pitch_vals, 'orange', label='Pitch Angle')
-plt.axhline(y=1.0, color='r', linestyle='--', alpha=0.5)
-plt.axhline(y=-1.0, color='r', linestyle='--', alpha=0.5)
-plt.title('Rocket Pitch Angle vs Time')
-plt.xlabel('Time (s)')
-plt.ylabel('Pitch Angle (degrees)')
-plt.grid(True)
-plt.legend()
+    tr = transforms.Affine2D().rotate_deg_around(0, 0, rot_angle_deg) + transforms.Affine2D().translate(cx, cy) + ax.transData
+    
+    rocket_body.set_xy((-diameter/2, -cg_from_base))
+    rocket_body.set_width(diameter)
+    rocket_body.set_height(height)
+    rocket_body.set_transform(tr)
 
-plt.tight_layout()
-plt.show()
+    trajectory_path.set_data(x_vals[:frame+1], y_vals[:frame+1])
+
+    if thrust_mag > 0:
+        thrust_len = thrust_mag / 50.0  # Scale down for visual
+        flame_angle_rad = math.radians(body_angle_deg + gimbal) + math.pi
+        flame_end_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg)) + thrust_len * math.cos(flame_angle_rad)
+        flame_end_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg)) + thrust_len * math.sin(flame_angle_rad)
+        base_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg))
+        base_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg))
+        
+        thrust_vector.set_data([base_x, flame_end_x], [base_y, flame_end_y])
+        thrust_vector.set_linestyle('-')
+        thrust_vector.set_color('red')
+    else:
+        base_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg))
+        base_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg))
+        flame_angle_rad = math.radians(body_angle_deg + gimbal) + math.pi
+        flame_end_x = base_x + 0.5 * math.cos(flame_angle_rad)
+        flame_end_y = base_y + 0.5 * math.sin(flame_angle_rad)
+        thrust_vector.set_data([base_x, flame_end_x], [base_y, flame_end_y])
+        thrust_vector.set_linestyle('--')
+        thrust_vector.set_color('gray')
+
+    telemetry_text.set_text(
+        f"Time: {t:.2f} s\n"
+        f"Altitude: {cy:.2f} m\n"
+        f"Velocity: {math.sqrt(vx**2+vy**2):.2f} m/s\n"
+        f"Pitch: {pitch:.2f}°\n"
+        f"Gimbal: {gimbal:.2f}°"
+    )
+
+    window_height = 40
+    window_width = 20
+    ax.set_xlim(cx - window_width/2, cx + window_width/2)
+    min_y = max(-5, cy - 10)
+    ax.set_ylim(min_y, min_y + window_height)
+
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+
+ani = FuncAnimation(fig, update, frames=len(times), init_func=init, blit=False, interval=20)
+ani.save('simulation/rocket_launch.mp4', writer='ffmpeg', fps=50)
+
+print("Animation logic added. The simulation will now generate 'simulation/rocket_launch.mp4' after running.")
