@@ -22,6 +22,11 @@ rho = 1.225  # kg/m^3
 height = 0.99  # m
 diameter = 0.1  # m
 
+# Parachute specs
+parachute_area = 0.28  # m^2
+parachute_cd = 1.5
+parachute_deployed = False
+
 # Moment Arms (Distance from base)
 cg_from_base = 0.35  # m
 cp_from_base = 0.60  # m
@@ -101,6 +106,12 @@ while time_elapsed == 0 or y >= 0:
     thrust_radial = thrust * math.sin(gimbal_angle)
     
     # Drag Vector
+    if time_elapsed > burn_time and v_y < 0 and not parachute_deployed:
+        parachute_deployed = True
+        # Overwrite the rocket's aerodynamic profile with the parachute's profile
+        area = parachute_area
+        Cd = parachute_cd
+
     velocity_mag = math.sqrt(v_x**2 + v_y**2)
     drag_force = 0.5 * rho * Cd * area * (velocity_mag**2)
 
@@ -232,12 +243,15 @@ def update(frame):
         thrust_vector.set_linestyle('--')
         thrust_vector.set_color('gray')
 
+    chute_status = "Deployed" if vy < 0 and t > burn_time else "Packed"
+
     telemetry_text.set_text(
         f"Time: {t:.2f} s\n"
         f"Altitude: {cy:.2f} m\n"
         f"Velocity: {math.sqrt(vx**2+vy**2):.2f} m/s\n"
         f"Pitch: {pitch:.2f}°\n"
-        f"Gimbal: {gimbal:.2f}°"
+        f"Gimbal: {gimbal:.2f}°\n"
+        f"Chute: {chute_status}"
     )
 
     window_height = 40
