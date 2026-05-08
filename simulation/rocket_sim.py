@@ -128,10 +128,24 @@ while time_elapsed == 0 or y >= 0:
         drag_y = 0.0
         drag_radial = 0.0
 
-    # Calculate Torques
-    torque_tvc = thrust_radial * moment_arm_tvc
-    torque_drag = drag_radial * moment_arm_drag
-    net_torque = torque_tvc - torque_drag
+    if not parachute_deployed:
+        # Calculate Torques
+        torque_tvc = thrust_radial * moment_arm_tvc
+        torque_drag = drag_radial * moment_arm_drag
+        net_torque = torque_tvc - torque_drag
+    else:
+        # The parachute acts as a massive dampener, forcing the rocket to hang vertically.
+        # Target pitch aligns the body to exactly 90 degrees (perfectly vertical).
+        target_pitch = math.radians(90.0 - launch_angle_deg)
+        
+        # Rapidly kill any residual spin
+        pitch_rate = pitch_rate * 0.85
+        
+        # Smoothly pull the rocket to the vertical hanging position
+        pitch_angle += (target_pitch - pitch_angle) * 0.15
+        
+        # Disable all standard rigid body torques while hanging under the chute
+        net_torque = 0.0
 
     # Calculate Rotational Acceleration
     angular_acceleration = net_torque / inertia
