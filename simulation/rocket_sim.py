@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+import matplotlib.patches as patches
+import matplotlib.transforms as transforms
 import numpy as np
 import math
 
@@ -66,6 +69,7 @@ accel_x_vals = [] # Added for x acceleration
 accel_y_vals = []
 accel_mag_vals = [] # Added for total acceleration
 pitch_vals = []  # Array for pitch data
+gimbal_vals = [] # Array for gimbal data
 
 print("Starting 2D Rigid Body Dynamics simulation...")
 
@@ -80,17 +84,17 @@ while time_elapsed == 0 or y >= 0:
         thrust = 0.0
 
     # 4. Update the Physics Loop
-    
+
     # Run Controller
     target_gimbal = (Kp_gain * pitch_angle) + (Kd_gain * pitch_rate)
-    
+
     # Actuation Lag/Limit
     target_gimbal = np.clip(target_gimbal, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
     gimbal_angle += (target_gimbal - gimbal_angle) * 0.25
 
     # Global orientation
     body_angle = launch_angle_rad + pitch_angle
-    
+
     # Total Thrust Vector
     thrust_dir = body_angle + gimbal_angle
     thrust_x = thrust * math.cos(thrust_dir)
@@ -98,7 +102,7 @@ while time_elapsed == 0 or y >= 0:
     
     # Thrust Radial component
     thrust_radial = thrust * math.sin(gimbal_angle)
-    
+
     # Drag Vector
     velocity_mag = math.sqrt(v_x**2 + v_y**2)
     drag_force = 0.5 * rho * Cd * area * (velocity_mag**2)
@@ -106,7 +110,7 @@ while time_elapsed == 0 or y >= 0:
     if velocity_mag > 0:
         drag_x = drag_force * (v_x / velocity_mag)
         drag_y = drag_force * (v_y / velocity_mag)
-        
+
         # Calculate Drag Radial component
         v_angle = math.atan2(v_y, v_x)
         aoa = body_angle - v_angle
@@ -152,10 +156,11 @@ while time_elapsed == 0 or y >= 0:
     accel_y_vals.append(a_y)
     accel_mag_vals.append(math.sqrt(a_x**2 + a_y**2))
     pitch_vals.append(math.degrees(pitch_angle))
+    gimbal_vals.append(math.degrees(gimbal_angle))
 
     # Increment time
     time_elapsed += dt
-    
+
     # Safety breakout if it goes too long
     if time_elapsed > 1000:
         print("Simulation timeout.")
@@ -166,8 +171,8 @@ print(f"Apogee (Max Height): {max(y_vals):.2f} m")
 print(f"Total Time of Flight: {time_elapsed:.2f} s")
 print(f"Max Horizontal Distance: {max(x_vals):.2f} m")
 
-# 5. Update Visualization
-plt.figure(figsize=(15, 10))
+# 5. Update Visualization (Static Plots)
+fig_static = plt.figure(figsize=(15, 10))
 
 # 1. Trajectory (X vs Y)
 plt.subplot(2, 3, 1)
@@ -221,5 +226,97 @@ plt.grid(True)
 plt.legend()
 
 plt.tight_layout()
-plt.savefig('D:/pointy_rocket/simulation/simulation_results.png')
-plt.close()
+fig_static.savefig('D:/pointy_rocket/simulation/simulation_results.png')
+plt.close(fig_static)
+
+# 6. Update Visualization (Animation)
+fig_anim, ax = plt.subplots(figsize=(6, 10))
+
+# Define Artists
+rocket_body = patches.Rectangle((-diameter/2, 0), diameter, height, fc='blue')
+thrust_vector, = ax.plot([], [], '-', color='red', linewidth=2)
+trajectory_path, = ax.plot([], [], 'g-', alpha=0.5)
+telemetry_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, verticalalignment='top',
+                         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+ground_line, = ax.plot([-100, 100], [0, 0], 'k-', linewidth=2)
+
+def init():
+    ax.add_patch(rocket_body)
+    ax.set_xlim(-10, 10)
+    ax.set_ylim(-5, 100)
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+
+def update(frame):
+    t = times[frame]
+    cx = x_vals[frame]
+    cy = y_vals[frame]
+    vx = v_x_vals[frame]
+    vy = v_y_vals[frame]
+    pitch = pitch_vals[frame]  # degrees
+    gimbal = gimbal_vals[frame]  # degrees
+
+    # Calculate Thrust status
+    if t < initial_thrust_duration:
+        thrust_mag = initial_thrust
+    elif t < burn_time:
+        thrust_mag = normal_thrust
+    else:
+        thrust_mag = 0.0
+
+    body_angle_deg = launch_angle_deg + pitch
+    rot_angle_deg = body_angle_deg - 90.0
+
+    tr = transforms.Affine2D().rotate_deg_around(0, 0, rot_angle_deg) + transforms.Affine2D().translate(cx, cy) + ax.transData
+
+    rocket_body.set_xy((-diameter/2, -cg_from_base))
+    rocket_body.set_width(diameter)
+    rocket_body.set_height(height)
+    rocket_body.set_transform(tr)
+
+    trajectory_path.set_data(x_vals[:frame+1], y_vals[:frame+1])
+
+    if thrust_mag > 0:
+        thrust_len = thrust_mag / 50.0  # Scale down for visual
+        flame_angle_rad = math.radians(body_angle_deg + gimbal) + math.pi
+        flame_end_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg)) + thrust_len * math.cos(flame_angle_rad)
+        flame_end_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg)) + thrust_len * math.sin(flame_angle_rad)
+        base_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg))
+        base_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg))
+
+        thrust_vector.set_data([base_x, flame_end_x], [base_y, flame_end_y])
+        thrust_vector.set_linestyle('-')
+        thrust_vector.set_color('red')
+    else:
+        base_x = cx - cg_from_base * math.cos(math.radians(body_angle_deg))
+        base_y = cy - cg_from_base * math.sin(math.radians(body_angle_deg))
+        flame_angle_rad = math.radians(body_angle_deg + gimbal) + math.pi
+        flame_end_x = base_x + 0.5 * math.cos(flame_angle_rad)
+        flame_end_y = base_y + 0.5 * math.sin(flame_angle_rad)
+        thrust_vector.set_data([base_x, flame_end_x], [base_y, flame_end_y])
+        thrust_vector.set_linestyle('--')
+        thrust_vector.set_color('gray')
+
+    telemetry_text.set_text(
+        f"Time: {t:.2f} s\n"
+        f"Altitude: {cy:.2f} m\n"
+        f"Velocity: {math.sqrt(vx**2+vy**2):.2f} m/s\n"
+        f"Pitch: {pitch:.2f}°\n"
+        f"Gimbal: {gimbal:.2f}°"
+    )
+
+    window_height = 40
+    window_width = 20
+    ax.set_xlim(cx - window_width/2, cx + window_width/2)
+    min_y = max(-5, cy - 10)
+    ax.set_ylim(min_y, min_y + window_height)
+
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+
+try:
+    ani = FuncAnimation(fig_anim, update, frames=len(times), init_func=init, blit=False, interval=20)
+    ani.save('D:/pointy_rocket/simulation/rocket_launch.mp4', writer='ffmpeg', fps=50)
+    print("Animation logic executed. The simulation generated 'D:/pointy_rocket/simulation/rocket_launch.mp4'.")
+except Exception as e:
+    print(f"Warning: Could not save animation, possibly missing ffmpeg. Error: {e}")
+finally:
+    plt.close(fig_anim)
