@@ -186,12 +186,15 @@ trajectory_path, = ax.plot([], [], 'g-', alpha=0.5)
 telemetry_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, verticalalignment='top',
                          bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 ground_line, = ax.plot([-100, 100], [0, 0], 'k-', linewidth=2)
+chute_line, = ax.plot([], [], 'k-', linewidth=1)
+canopy = patches.Arc((0,0), 2, 2, angle=0, theta1=0, theta2=180, color='green', linewidth=2)
 
 def init():
     ax.add_patch(rocket_body)
+    ax.add_patch(canopy)
     ax.set_xlim(-10, 10)
     ax.set_ylim(-5, 100)
-    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line, chute_line, canopy
 
 def update(frame):
     t = times[frame]
@@ -245,6 +248,17 @@ def update(frame):
 
     chute_status = "Deployed" if vy < 0 and t > burn_time else "Packed"
 
+    if vy < 0 and t > burn_time:
+        top_x = cx + (height - cg_from_base) * math.cos(math.radians(body_angle_deg))
+        top_y = cy + (height - cg_from_base) * math.sin(math.radians(body_angle_deg))
+        canopy_x = top_x
+        canopy_y = top_y + 3.0
+        canopy.center = (canopy_x, canopy_y)
+        chute_line.set_data([top_x, canopy_x], [top_y, canopy_y])
+    else:
+        chute_line.set_data([], [])
+        canopy.center = (-1000, -1000)
+
     telemetry_text.set_text(
         f"Time: {t:.2f} s\n"
         f"Altitude: {cy:.2f} m\n"
@@ -260,7 +274,7 @@ def update(frame):
     min_y = max(-5, cy - 10)
     ax.set_ylim(min_y, min_y + window_height)
 
-    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line, chute_line, canopy
 
 ani = FuncAnimation(fig, update, frames=len(times), init_func=init, blit=False, interval=20)
 ani.save('simulation/rocket_launch.mp4', writer='ffmpeg', fps=50)
