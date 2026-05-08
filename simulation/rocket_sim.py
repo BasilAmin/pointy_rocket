@@ -16,11 +16,15 @@ normal_thrust = 46.0
 burn_time = 1.6  
 
 # Aerodynamic & Physical parameters
-area = 0.00785  
-Cd = 0.75
+area_base = 0.00785  
+Cd_base = 0.75
 rho = 1.225  
 height = 0.99  
 diameter = 0.1  
+
+# Parachute specs
+parachute_area = 0.28  # m^2
+parachute_cd = 1.5
 
 # Moment Arms 
 cg_from_base = 0.35  
@@ -81,12 +85,23 @@ def get_derivatives(t, state, est_pitch, est_pitch_rate):
     dgimbal_dt = (target_gimbal - gimbal) / SERVO_TAU
     
     body_angle = launch_angle_rad + pitch
+    
+    # Parachute deployment logic inside derivative
+    if vy < 0 and t > burn_time:
+        area = parachute_area
+        Cd = parachute_cd
+    else:
+        area = area_base
+        Cd = Cd_base
+
     velocity_mag = math.sqrt(vx**2 + vy**2)
     drag_force = 0.5 * rho * Cd * area * (velocity_mag**2)
     
     if velocity_mag > 1e-6:
         drag_x = drag_force * (vx / velocity_mag)
         drag_y = drag_force * (vy / velocity_mag)
+        
+        # Calculate Angle of Attack (AoA) for radial drag
         v_angle = math.atan2(vy, vx)
         aoa = body_angle - v_angle
         drag_radial = drag_force * math.sin(aoa)
@@ -280,6 +295,11 @@ fig_anim, ax = plt.subplots(figsize=(6, 10))
 rocket_body = patches.Rectangle((-diameter/2, 0), diameter, height, fc='blue')
 thrust_vector, = ax.plot([], [], '-', color='red', linewidth=2)
 trajectory_path, = ax.plot([], [], 'g-', alpha=0.5)
+
+# Parachute patches
+canopy = patches.Arc((0, 0), 2.0, 1.5, theta1=0.0, theta2=180.0, color='orange', linewidth=2)
+chute_line, = ax.plot([], [], 'k-', linewidth=1)
+
 telemetry_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, verticalalignment='top',
                          bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 ground_line, = ax.plot([-100, 100], [0, 0], 'k-', linewidth=2)
@@ -288,7 +308,7 @@ def init():
     ax.add_patch(rocket_body)
     ax.set_xlim(-10, 10)
     ax.set_ylim(-5, 100)
-    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line, canopy, chute_line
 
 def update(frame):
     t = times[frame]
@@ -328,13 +348,29 @@ def update(frame):
         thrust_vector.set_linestyle('--')
         thrust_vector.set_color('gray')
 
-    telemetry_text.set_text(f"Time: {t:.2f} s\nAlt: {cy:.2f} m\nVel: {math.sqrt(vx**2+vy**2):.2f} m/s\nPitch: {pitch:.2f}°\nGimbal: {gimbal:.2f}°")
+    chute_status = "Deployed" if vy < 0 and t > burn_time else "Packed"
+
+    if vy < 0 and t > burn_time:
+        if canopy not in ax.patches:
+            ax.add_patch(canopy)
+        top_x = cx + (height - cg_from_base) * math.cos(math.radians(body_angle_deg))
+        top_y = cy + (height - cg_from_base) * math.sin(math.radians(body_angle_deg))
+        canopy_x = top_x
+        canopy_y = top_y + 3.0
+        canopy.center = (canopy_x, canopy_y)
+        chute_line.set_data([top_x, canopy_x], [top_y, canopy_y])
+    else:
+        if canopy in ax.patches:
+            canopy.remove()
+        chute_line.set_data([], [])
+
+    telemetry_text.set_text(f"Time: {t:.2f} s\nAlt: {cy:.2f} m\nVel: {math.sqrt(vx**2+vy**2):.2f} m/s\nPitch: {pitch:.2f}°\nGimbal: {gimbal:.2f}°\nChute: {chute_status}")
     
     window_height, window_width = 40, 20
     ax.set_xlim(cx - window_width/2, cx + window_width/2)
     min_y = max(-5, cy - 10)
     ax.set_ylim(min_y, min_y + window_height)
-    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line
+    return rocket_body, thrust_vector, trajectory_path, telemetry_text, ground_line, canopy, chute_line
 
 try:
     ani = FuncAnimation(fig_anim, update, frames=len(times), init_func=init, blit=False, interval=20)
