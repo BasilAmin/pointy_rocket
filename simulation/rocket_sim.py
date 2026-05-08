@@ -4,12 +4,17 @@ import math
 
 # Fundamental Simulation Variables
 # You can tweak these parameters to match your specific rocket motor and mass
-mass = 1.0  # kg
+mass = 1.23  # kg
 gravity = 9.802  # m/s^2
-initial_thrust = 100.0  # N (Peak thrust at ignition)
-initial_thrust_duration = 0.5  # s (How long the initial peak lasts)
-normal_thrust = 30.0  # N (Sustained thrust)
-burn_time = 3.0  # s (Total motor burn time)
+initial_thrust = 132.0  # N (Peak thrust at ignition)
+initial_thrust_duration = 0.2  # s (How long the initial peak lasts)
+normal_thrust = 46.0  # N (Sustained thrust)
+burn_time = 1.6  # s (Total motor burn time)
+
+# Aerodynamic parameters
+area = 0.00785  # m^2
+Cd = 0.75
+rho = 1.225  # kg/m^3
 
 # Launch parameters
 launch_angle_deg = 85.0  # Degrees from horizontal. 90 = straight up.
@@ -45,12 +50,23 @@ while time_elapsed == 0 or y >= 0:
     else:
         thrust = 0.0
 
+    # Calculate aerodynamic drag
+    velocity_mag = math.sqrt(v_x**2 + v_y**2)
+    drag_force = 0.5 * rho * Cd * area * (velocity_mag**2)
+
+    if velocity_mag > 0:
+        drag_x = drag_force * (v_x / velocity_mag)
+        drag_y = drag_force * (v_y / velocity_mag)
+    else:
+        drag_x = 0.0
+        drag_y = 0.0
+
     # Calculate forces
     thrust_x = thrust * math.cos(launch_angle_rad)
     thrust_y = thrust * math.sin(launch_angle_rad)
     
-    force_net_x = thrust_x
-    force_net_y = thrust_y - (mass * gravity)
+    force_net_x = thrust_x - drag_x
+    force_net_y = thrust_y - (mass * gravity) - drag_y
 
     # Calculate acceleration
     a_x = force_net_x / mass
