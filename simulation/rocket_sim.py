@@ -32,12 +32,12 @@ moment_arm_drag = cp_from_base - cg_from_base  # CP to CG
 inertia = (1/12) * mass * (height**2) + (1/4) * mass * ((diameter/2)**2)
 
 # 2. The Controller Section
-MAX_GIMBAL_ANGLE_DEG = 5.0
+MAX_GIMBAL_ANGLE_DEG = 8.0
 MAX_GIMBAL_ANGLE_RAD = math.radians(MAX_GIMBAL_ANGLE_DEG)
 
 # PD Controller Gains
-Kp_gain = 1.5
-Kd_gain = 0.25
+Kp_gain = 5.0
+Kd_gain = 1.2
 
 # Launch parameters
 launch_angle_deg = 85.0  # Degrees from horizontal
