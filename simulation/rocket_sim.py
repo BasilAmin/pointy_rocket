@@ -61,7 +61,10 @@ x_vals = []
 y_vals = []
 v_y_vals = []
 v_x_vals = []
+v_mag_vals = []  # Added for total velocity
+accel_x_vals = [] # Added for x acceleration
 accel_y_vals = []
+accel_mag_vals = [] # Added for total acceleration
 pitch_vals = []  # Array for pitch data
 
 print("Starting 2D Rigid Body Dynamics simulation...")
@@ -144,7 +147,10 @@ while time_elapsed == 0 or y >= 0:
     y_vals.append(y)
     v_x_vals.append(v_x)
     v_y_vals.append(v_y)
+    v_mag_vals.append(math.sqrt(v_x**2 + v_y**2))
+    accel_x_vals.append(a_x)
     accel_y_vals.append(a_y)
+    accel_mag_vals.append(math.sqrt(a_x**2 + a_y**2))
     pitch_vals.append(math.degrees(pitch_angle))
 
     # Increment time
@@ -184,17 +190,20 @@ plt.grid(True)
 plt.subplot(2, 3, 3)
 plt.plot(times, v_y_vals, 'r-', label='Vertical Velocity')
 plt.plot(times, v_x_vals, 'c-', label='Horizontal Velocity')
+plt.plot(times, v_mag_vals, 'k:', label='Total Velocity')
 plt.title('Velocity vs Time')
 plt.xlabel('Time (s)')
 plt.ylabel('Velocity (m/s)')
 plt.grid(True)
 plt.legend()
 
-# 4. Vertical Acceleration vs Time
+# 4. Accelerations vs Time
 plt.subplot(2, 3, 4)
 plt.plot(times, accel_y_vals, 'm-', label='Vertical Acceleration')
+plt.plot(times, accel_x_vals, 'c-', label='Horizontal Acceleration')
+plt.plot(times, accel_mag_vals, 'k:', label='Total Acceleration')
 plt.axvline(x=burn_time, color='k', linestyle='--', label='Motor Burnout')
-plt.title('Vertical Acceleration vs Time')
+plt.title('Acceleration vs Time')
 plt.xlabel('Time (s)')
 plt.ylabel('Acceleration (m/s²)')
 plt.grid(True)
@@ -212,4 +221,5 @@ plt.grid(True)
 plt.legend()
 
 plt.tight_layout()
-plt.show()
+plt.savefig('D:/pointy_rocket/simulation/simulation_results.png')
+plt.close()
