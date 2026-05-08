@@ -40,7 +40,7 @@ Kp_gain = 5.0
 Kd_gain = 1.2
 
 # Launch parameters
-launch_angle_deg = 85.0  # Degrees from horizontal
+launch_angle_deg = 90.0  # Degrees from horizontal
 launch_angle_rad = math.radians(launch_angle_deg)
 
 # Initial conditions (Translational)
@@ -83,7 +83,7 @@ while time_elapsed == 0 or y >= 0:
     # 4. Update the Physics Loop
     
     # Run Controller
-    target_gimbal = (Kp_gain * pitch_angle) + (Kd_gain * pitch_rate)
+    target_gimbal = -((Kp_gain * pitch_angle) + (Kd_gain * pitch_rate))
     
     # Actuation Lag/Limit
     target_gimbal = np.clip(target_gimbal, -MAX_GIMBAL_ANGLE_RAD, MAX_GIMBAL_ANGLE_RAD)
