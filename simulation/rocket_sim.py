@@ -40,7 +40,7 @@ Kp_gain = 5.0
 Kd_gain = 1.2
 
 # Launch parameters
-launch_angle_deg = 90.0  # Degrees from horizontal
+launch_angle_deg = 88.0  # Degrees from horizontal
 launch_angle_rad = math.radians(launch_angle_deg)
 
 # Initial conditions (Translational)
