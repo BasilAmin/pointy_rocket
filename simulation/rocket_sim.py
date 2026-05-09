@@ -309,7 +309,7 @@ ax4_t.set_ylabel('Thrust (N)')
 ax4.grid(True)
 
 plt.tight_layout()
-plt.savefig('D:/pointy_rocket/simulation/simulation_results.png')
+plt.savefig('~/pointy_rocket/simulation/simulation_results.png')
 print("Static results saved to simulation_results.png")
 
 # 3D Perspective Animation
