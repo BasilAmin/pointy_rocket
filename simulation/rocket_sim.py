@@ -6,9 +6,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import math
 
-# ==========================================
 # 1. Physical Parameters & 3D Definitions
-# ==========================================
+
 initial_total_mass = 1.23  # kg
 gravity_val = 9.802
 gravity_vec = np.array([0.0, -gravity_val, 0.0])  # World Frame (Y is UP)
@@ -22,9 +21,10 @@ cg_prop_from_base = 0.05  # m
 cg_dry_from_base = 0.37597  # m
 
 # Thrust Profile (Estes D12 x 4)
-thrust_curve_time = np.array([0.0, 0.05, 0.1, 0.15, 0.2, 0.4, 0.8, 1.2, 1.5, 1.6, 1.7])
-thrust_curve_force = np.array([100.0, 132.0, 132.0, 90.0, 48.0, 44.0, 42.0, 40.0, 35.0, 0.0, 0.0])
-burn_time = 1.6 
+# High-fidelity data based on verified D12 RASP curve (values scaled x4)
+thrust_curve_time = np.array([0.0, 0.05, 0.18, 0.28, 0.35, 0.88, 1.44, 1.61, 1.65])
+thrust_curve_force = np.array([0.0, 10.3, 69.1, 118.9, 56.5, 36.4, 33.2, 18.5, 0.0])
+burn_time = 1.65
 
 # Calculate Cumulative Impulse
 cum_impulse = np.zeros_like(thrust_curve_force)
@@ -61,9 +61,8 @@ Ki_gain = 0.8
 surface_wind = np.array([2.0, 0.0, 1.5])  # 3D Wind vector (m/s)
 wind_shear_gradient = 0.05 
 
-# ==========================================
+
 # 2. Quaternion & 3D Math Helpers
-# ==========================================
 
 def q_mult(q1, q2):
     """Quaternion multiplication."""
@@ -87,9 +86,8 @@ def q_normalize(q):
     norm = np.linalg.norm(q)
     return q / norm if norm > 1e-12 else np.array([1.0, 0, 0, 0])
 
-# ==========================================
+
 # 3. Physics & State Calculation
-# ==========================================
 
 def get_physics_properties(t):
     if t >= thrust_curve_time[-1]:
@@ -207,9 +205,8 @@ def rk4_step(t, state, dt, err, rate, int_v):
     k4 = get_derivatives(t + dt, state + dt * k3, err, rate, int_v)
     return state + (dt/6) * (k1 + 2*k2 + 2*k3 + k4)
 
-# ==========================================
+
 # 4. Main Simulation Loop
-# ==========================================
 
 # Initial State Vector (15 elements)
 X = np.zeros(15)
@@ -227,7 +224,7 @@ log_mass, log_thrust = [], []
 
 print("Starting 6-DOF 3D Rocket Simulation (RK4 + Quaternions)...")
 
-while time_elapsed == 0 or X[1] >= 0:
+while time_elapsed == 0 or (X[1] >= 0 or time_elapsed < 0.5):
     # 1. IMU & State Estimation
     # Project World-UP [0, 1, 0] into Body frame
     quat_curr = q_normalize(X[6:10])
@@ -271,9 +268,9 @@ apogee = np.max(log_pos[:,1])
 print(f"Apogee: {apogee:.2f} m")
 print(f"Total Time: {time_elapsed:.2f} s")
 
-# ==========================================
+
 # 5. Visualization
-# ==========================================
+
 fig = plt.figure(figsize=(15, 10))
 
 # 3D Trajectory
