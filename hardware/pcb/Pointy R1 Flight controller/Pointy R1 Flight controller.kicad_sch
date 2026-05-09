@@ -787,6 +787,146 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "symbols:1N4007 Diode"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "1N4007"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "footprints:P1_DO-41"
+				(at 0 1.27 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://diotec.com/de/produktliste/D.html"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "1N4007 Diode_0_1"
+				(polyline
+					(pts
+						(xy -1.27 0) (xy 1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy 1.27 0) (xy -1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "1N4007 Diode_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "C"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "symbols:1N5822"
 			(pin_names
 				(offset 1.016)
@@ -4742,6 +4882,12 @@
 		(uuid "4169ec8f-63c3-4db0-90b5-333267cc245c")
 	)
 	(junction
+		(at 110.49 124.46)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "52ac66ce-90d5-4927-81e6-12f6f4b037db")
+	)
+	(junction
 		(at 256.54 67.31)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4766,6 +4912,12 @@
 		(uuid "b3341c8c-bf09-47b7-be41-9a3b99bca728")
 	)
 	(junction
+		(at 110.49 95.25)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dce9cfa1-523b-4671-847e-b7459585851f")
+	)
+	(junction
 		(at 119.38 39.37)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4776,6 +4928,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e6989d6b-e5dd-4fac-bf0d-6069d457258b")
+	)
+	(junction
+		(at 110.49 66.04)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f50272f7-7fbd-474d-90b9-a75e9898b3e2")
 	)
 	(junction
 		(at 95.25 133.35)
@@ -4814,6 +4972,16 @@
 			(type default)
 		)
 		(uuid "02be208a-c440-4d63-b4bf-92a91d88148b")
+	)
+	(wire
+		(pts
+			(xy 110.49 138.43) (xy 119.38 138.43)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "055d33df-fb8d-4f16-9cbb-55053246117c")
 	)
 	(wire
 		(pts
@@ -4874,6 +5042,16 @@
 			(type default)
 		)
 		(uuid "14f5b3a3-9069-4bb5-92fd-c79dc834f5b2")
+	)
+	(wire
+		(pts
+			(xy 119.38 109.22) (xy 119.38 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1564b953-00ef-4704-81e9-3ed7c04676c8")
 	)
 	(wire
 		(pts
@@ -5057,6 +5235,16 @@
 	)
 	(wire
 		(pts
+			(xy 119.38 127) (xy 119.38 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39329e1a-368c-4b67-9042-ff9abd23c6c7")
+	)
+	(wire
+		(pts
 			(xy 254 148.59) (xy 259.08 148.59)
 		)
 		(stroke
@@ -5064,6 +5252,16 @@
 			(type default)
 		)
 		(uuid "3a142f9b-c59a-434c-a5c9-913b7630128a")
+	)
+	(wire
+		(pts
+			(xy 119.38 138.43) (xy 119.38 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3c04045c-7ae8-45cd-bc5e-81cc9504dc54")
 	)
 	(wire
 		(pts
@@ -5337,6 +5535,26 @@
 	)
 	(wire
 		(pts
+			(xy 119.38 80.01) (xy 119.38 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "742e2829-9cae-413e-8b9d-a186cd255948")
+	)
+	(wire
+		(pts
+			(xy 119.38 97.79) (xy 119.38 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "759eac22-e911-40e9-b018-3a4ff2c89132")
+	)
+	(wire
+		(pts
 			(xy 119.38 30.48) (xy 116.84 30.48)
 		)
 		(stroke
@@ -5497,6 +5715,16 @@
 	)
 	(wire
 		(pts
+			(xy 110.49 124.46) (xy 119.38 124.46)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9797881a-16a7-4a34-a48c-0c0b0abf4c08")
+	)
+	(wire
+		(pts
 			(xy 35.56 66.04) (xy 40.64 66.04)
 		)
 		(stroke
@@ -5514,6 +5742,16 @@
 			(type default)
 		)
 		(uuid "99157a1f-860b-4988-b13d-4f38cb285234")
+	)
+	(wire
+		(pts
+			(xy 110.49 80.01) (xy 119.38 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9ed78381-b6c3-491d-b0e7-23619ef4a907")
 	)
 	(wire
 		(pts
@@ -5717,6 +5955,16 @@
 	)
 	(wire
 		(pts
+			(xy 110.49 109.22) (xy 119.38 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cabc0423-207a-4a31-94a5-dceb4d37741d")
+	)
+	(wire
+		(pts
 			(xy 53.34 171.45) (xy 53.34 167.64)
 		)
 		(stroke
@@ -5804,6 +6052,16 @@
 			(type default)
 		)
 		(uuid "d80a1750-6dc3-4cf2-8347-1e2cf5d4f7ae")
+	)
+	(wire
+		(pts
+			(xy 119.38 68.58) (xy 119.38 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d83eb457-fd9a-492f-8eee-37b11c3b4c30")
 	)
 	(wire
 		(pts
@@ -5907,6 +6165,16 @@
 	)
 	(wire
 		(pts
+			(xy 119.38 95.25) (xy 110.49 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e9c6195c-c51b-4d94-bab0-3eece977a06f")
+	)
+	(wire
+		(pts
 			(xy 74.93 34.29) (xy 74.93 39.37)
 		)
 		(stroke
@@ -5994,6 +6262,16 @@
 			(type default)
 		)
 		(uuid "fcd8db4d-370a-4722-ac4c-ff42d12aac3c")
+	)
+	(wire
+		(pts
+			(xy 119.38 66.04) (xy 110.49 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fddc1ba8-5daa-4148-9de8-aa86047aefb1")
 	)
 	(wire
 		(pts
@@ -7405,10 +7683,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "26b47136-b748-4b4c-93a4-560ae1da481c")
 		(property "Reference" "Q1"
-			(at 114.3 71.1199 0)
+			(at 103.886 67.818 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -7417,7 +7694,7 @@
 			)
 		)
 		(property "Value" "IRLZ44NSTRLPBF"
-			(at 114.3 73.6599 0)
+			(at 98.806 63.754 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -7532,6 +7809,76 @@
 			(project ""
 				(path "/461b38ed-136a-4336-8029-84a41326c46a"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "symbols:1N4007 Diode")
+		(at 119.38 72.39 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "280c1370-8e17-45fe-ac08-3d0dc9fd0e62")
+		(property "Reference" "D4"
+			(at 121.92 71.1199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1N4007"
+			(at 121.92 73.6599 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "footprints:P1_DO-41"
+			(at 120.65 72.39 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://diotec.com/de/produktliste/D.html"
+			(at 116.84 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Diode"
+			(at 119.38 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "dfe9cab5-97ba-4de5-a144-5c4d6f16b93b")
+		)
+		(pin "2"
+			(uuid "b36755d1-a389-4c3f-a9a3-67914c01911a")
+		)
+		(instances
+			(project "Pointy R1 Flight controller"
+				(path "/461b38ed-136a-4336-8029-84a41326c46a"
+					(reference "D4")
 					(unit 1)
 				)
 			)
@@ -7994,6 +8341,76 @@
 			(project ""
 				(path "/461b38ed-136a-4336-8029-84a41326c46a"
 					(reference "#PWR010")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "symbols:1N4007 Diode")
+		(at 119.38 101.6 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5339b4f7-f2b8-44e0-b659-723110162ed9")
+		(property "Reference" "D3"
+			(at 121.92 100.3299 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1N4007"
+			(at 121.92 102.8699 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "footprints:P1_DO-41"
+			(at 120.65 101.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://diotec.com/de/produktliste/D.html"
+			(at 116.84 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Diode"
+			(at 119.38 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9eba3aaf-4e1e-4190-8794-c41eebb21394")
+		)
+		(pin "2"
+			(uuid "df40164f-0991-4ef0-8e75-a402dbe6f415")
+		)
+		(instances
+			(project "Pointy R1 Flight controller"
+				(path "/461b38ed-136a-4336-8029-84a41326c46a"
+					(reference "D3")
 					(unit 1)
 				)
 			)
@@ -9974,10 +10391,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "a3590d72-6b37-404b-9149-10e57815c2ac")
 		(property "Reference" "Q2"
-			(at 114.3 100.3299 0)
+			(at 104.394 96.774 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -9986,7 +10402,7 @@
 			)
 		)
 		(property "Value" "IRLZ44NSTRLPBF"
-			(at 114.3 102.8699 0)
+			(at 99.06 93.218 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -10184,10 +10600,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "b0dd47d5-c96f-4e55-a291-6b24a8a6391e")
 		(property "Reference" "Q3"
-			(at 114.3 129.5399 0)
+			(at 104.394 126.238 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -10196,7 +10611,7 @@
 			)
 		)
 		(property "Value" "IRLZ44NSTRLPBF"
-			(at 114.3 132.0799 0)
+			(at 99.314 122.682 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -10602,6 +11017,76 @@
 			(project ""
 				(path "/461b38ed-136a-4336-8029-84a41326c46a"
 					(reference "LED1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "symbols:1N4007 Diode")
+		(at 119.38 130.81 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cbd1ff59-2bf4-4455-833b-4c009bd00ab3")
+		(property "Reference" "D2"
+			(at 121.92 129.5399 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1N4007"
+			(at 121.92 132.0799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "footprints:P1_DO-41"
+			(at 120.65 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://diotec.com/de/produktliste/D.html"
+			(at 116.84 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Diode"
+			(at 119.38 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c6b47fb5-cec8-4a42-9816-c81a64d7f3d1")
+		)
+		(pin "2"
+			(uuid "da0396c4-c647-4813-b98e-cb443e5cf101")
+		)
+		(instances
+			(project ""
+				(path "/461b38ed-136a-4336-8029-84a41326c46a"
+					(reference "D2")
 					(unit 1)
 				)
 			)
