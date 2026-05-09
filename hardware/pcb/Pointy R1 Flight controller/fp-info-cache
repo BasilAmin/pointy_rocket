@@ -1,4 +1,4 @@
-27119363101674529
+27122919420843580
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -107359,6 +107359,13 @@ CUI_CMI-1295-0585T
 2
 2
 footprints
+DIOAD1990W125L900D530
+
+
+0
+2
+2
+footprints
 MODULE_GY-521
 
 
@@ -107372,6 +107379,13 @@ MPL3115A2
 0
 7
 7
+footprints
+NMOSGDS_D2PAK_INF
+
+IRLZ44NSTRLPBF 
+0
+3
+3
 footprints
 SOT95P240X111-3N
 <b>SOT-23</b>
