@@ -1,4 +1,4 @@
-27122919420843580
+27124697775455735
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -107386,6 +107386,13 @@ IRLZ44NSTRLPBF
 0
 3
 3
+footprints
+P1_DO-41
+Diotec Diode DO-41_DO-204AC
+Diode DO-41 DO-214AC Axial Horizontal 
+0
+2
+2
 footprints
 SOT95P240X111-3N
 <b>SOT-23</b>
