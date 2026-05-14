@@ -4,9 +4,7 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
-<<<<<<< HEAD
 .DS_Store
-=======
 
 # Python specific
 *.pyc
@@ -22,5 +20,3 @@ secrets.json
 venv/
 .venv/
 
-
->>>>>>> 45b5b9832ed9de22441c39311b81f62f974cc3a1
