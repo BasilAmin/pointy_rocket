@@ -58,8 +58,8 @@
 		(start -9.5 -18)
 		(end 9.5 0)
 		(stroke
-			(width 0.1)
-			(type default)
+			(width 0.15)
+			(type solid)
 		)
 		(fill no)
 		(layer "F.SilkS")
