@@ -257,4 +257,15 @@
 		(uuid "b3fff636-768d-4399-9a8b-cd691a3101b1")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/itg-mpu-gy-521-1.snapshot.16/ITG-MPU.STEP"
+		(offset
+			(xyz -10.3 -20.5 -3)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -180)
+		)
+	)
 )

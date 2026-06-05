@@ -507,4 +507,15 @@
 		(uuid "ffe4ec47-14ea-40df-b786-58669668ffc0")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/2758--3DModel-STEP-56544.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -180)
+		)
+	)
 )

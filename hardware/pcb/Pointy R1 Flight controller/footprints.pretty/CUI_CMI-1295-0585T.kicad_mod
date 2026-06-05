@@ -162,4 +162,15 @@
 		(uuid "c861c5a8-e8ff-4785-8dc1-128f7e96d2d6")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/CMI-1295-0585T--3DModel-STEP-1.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -90)
+		)
+	)
 )

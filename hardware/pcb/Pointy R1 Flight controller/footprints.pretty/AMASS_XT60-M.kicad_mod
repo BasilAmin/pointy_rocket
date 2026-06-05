@@ -289,4 +289,15 @@
 		(uuid "12c63ff7-511d-43f6-a2da-3f57b153a557")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/XT60 YELLOW--3DModel-STEP-269445.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -180)
+		)
+	)
 )

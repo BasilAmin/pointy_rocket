@@ -220,4 +220,15 @@
 		(uuid "bd4f5214-51e5-488e-8fd4-39cfcfb3b60e")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/L7805CV.STEP"
+		(offset
+			(xyz 2.5 0.5 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -0)
+		)
+	)
 )

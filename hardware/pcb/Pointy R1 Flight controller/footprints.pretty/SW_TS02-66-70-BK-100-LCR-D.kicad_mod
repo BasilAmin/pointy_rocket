@@ -229,4 +229,15 @@
 		(uuid "d9939f68-2247-4c3b-bd9f-2df94e00965a")
 	)
 	(embedded_fonts no)
+	(model "${KIPRJMOD}/3d Models/TS02-66-70-BK-100-LCR-D--3DModel-STEP-242080.STEP"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 -0 -0)
+		)
+	)
 )
