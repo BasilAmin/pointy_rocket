@@ -170,6 +170,25 @@ The same figure can be produced from the command line:
 python plots.py path/to/motor.eng    # writes matplotlib_results.png
 ```
 
+### Flight computer in the loop
+
+The TVC sim does not steer with perfect knowledge — it runs a realistic flight-computer model (`flight_computer.py`) matched to the actual hardware (MPU6050 read at its ±2 g / ±250 °/s defaults; two servos on the Arduino `Servo` library = 1° write resolution):
+
+- **MPU6050 sensor model** — per-flight gyro/accel bias, white noise, range clipping and 16-bit quantisation.
+- **Attitude estimator** — gyro integration with on-pad calibration. (In flight a rocket's accelerometer can't sense gravity — under thrust it reads thrust, in coast it's in free fall — so the accelerometer is used only on the pad to set the initial attitude and the gyro bias. This is the reference algorithm for the Teensy firmware.)
+- **Discrete PID** at the configured control rate with control-loop **latency**.
+- **Servo model** — slew-rate limit, command resolution, deadband and lag.
+
+Two findings this exposes: residual **gyro-bias drift** is the dominant attitude error, and because thrust vectoring needs thrust, the rocket is only controllable **during the burn** — after burnout a finless vehicle tumbles (expected; recovery is by parachute). Stability is therefore judged over the powered phase.
+
+### Monte-Carlo dispersion
+
+`montecarlo.py` runs many flights with the uncertain parameters perturbed (mass, propellant, motor thrust, drag, centre of pressure, wind, thrust misalignment, sensor bias/noise) and reports the distribution of apogee, powered-phase tilt, gimbal usage and landing radius, plus the fraction of flights that stay controlled during burn. RocketPy aerodynamics are evaluated once for the nominal vehicle; flights run in parallel across CPU cores.
+
+```bash
+python montecarlo.py path/to/motor.eng 200 path/to/rocket.ork
+```
+
 ### 6-DOF Flight Simulation
 
 `rocket_sim.py` implements a full **6 Degrees of Freedom** rigid-body simulation:
